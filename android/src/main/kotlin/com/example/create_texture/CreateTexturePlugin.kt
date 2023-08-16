@@ -11,6 +11,7 @@ import io.flutter.plugin.common.MethodChannel.Result
 import android.graphics.SurfaceTexture
 import android.util.Log
 import android.util.LongSparseArray
+import androidx.collection.ArrayMap
 
 import io.flutter.view.TextureRegistry
 
@@ -23,7 +24,7 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
   private lateinit var channel : MethodChannel
 
   private lateinit var textures: TextureRegistry
-  private lateinit var surfaceTexture: SurfaceTexture
+  private var surfaceTextures: ArrayMap<Long, SurfaceTexture> = ArrayMap()
   private val renders: LongSparseArray<OpenGLRenderer> = LongSparseArray()
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -40,11 +41,12 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
     if (call.method.equals("create")) {
 
       val entry: TextureRegistry.SurfaceTextureEntry = textures.createSurfaceTexture()
-      surfaceTexture = entry.surfaceTexture()
+      val surfaceTexture: SurfaceTexture = entry.surfaceTexture()
       val width = arguments["width"]!!.toInt()
       val height = arguments["height"]!!.toInt()
 
       surfaceTexture.setDefaultBufferSize(width, height)
+      surfaceTextures[entry.id()] = surfaceTexture
 //      val worker = SampleRenderWorker()
 //      val render = OpenGLRenderer(surfaceTexture, worker)
 //      renders.put(entry.id(), render)
@@ -54,11 +56,14 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
 
       val textureId = arguments["textureId"]!!.toLong()
 
-      val worker = SampleRenderWorker()
-      val render = OpenGLRenderer(surfaceTexture, worker)
-      renders.put(textureId, render)
+      val surfaceTexture: SurfaceTexture? = surfaceTextures[textureId]
+      if (surfaceTexture != null) {
+        val worker = SampleRenderWorker()
+        val render = OpenGLRenderer(surfaceTexture, worker)
+        renders.put(textureId, render)
 
-      result.success(null)
+        result.success(null)
+      }
 
     } else if (call.method.equals("dispose")) {
 
