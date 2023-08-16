@@ -9,7 +9,8 @@ class OpenGLTextureController {
   int textureId = CreateTexturePlatform.instance.textureId ?? 0;
 
   Future<int> initialize(double width, double height) async {
-    return CreateTexturePlatform.instance.initialize(width, height);
+    textureId = await CreateTexturePlatform.instance.initialize(width, height);
+    return textureId;
   }
 
   Future<void> draw() async {
