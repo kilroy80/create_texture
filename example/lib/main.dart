@@ -16,7 +16,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final _controller = OpenGLTextureController();
   final _width = 300.0;
-  final _height = 500.0;
+  final _height = 300.0;
 
   @override
   initState() {
@@ -58,7 +58,9 @@ class _MyAppState extends State<MyApp> {
     var buffers = bytes.buffer.asUint8List();
 
     var result = await _controller.initialize(_width, _height);
+    while (true) {
       _controller.draw(buffers);
+    }
 
     setState(() {});
   }

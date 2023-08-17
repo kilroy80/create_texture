@@ -1,24 +1,24 @@
-package com.example.create_texture
+package com.example.create_texture.open
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.opengl.GLES20
 import android.opengl.GLUtils
-import android.util.Log
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
+import kotlin.math.sin
 
-class SampleRenderWorker : OpenGLRenderer.Worker {
+class SampleRenderWorker : CreateRenderer.Worker {
 
-    constructor(bytes: ByteArray) {
-        byteArray = bytes
-    }
+//    constructor(bytes: ByteArray) {
+//        byteArray = bytes
+//    }
 
     private var _tick = 0.0
 
-    private var byteArray: ByteArray
+//    private var byteArray: ByteArray
 
     private lateinit var verticesBuffer: FloatBuffer
     private lateinit var textureBuffer: FloatBuffer
@@ -70,13 +70,15 @@ class SampleRenderWorker : OpenGLRenderer.Worker {
 //        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
     }
 
-    override fun onDraw(): Boolean {
+    override fun onDraw(byteArray: ByteArray): Boolean {
 //        _tick += Math.PI / 60
 //        val green = ((sin(_tick) + 1) / 2).toFloat()
 //        GLES20.glClearColor(0f, green, 0f, 1f)
 //        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
 
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT or GLES20.GL_STENCIL_BUFFER_BIT)
+//        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT or GLES20.GL_STENCIL_BUFFER_BIT)
+//
+        val id = 0
 
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
         GLES20.glUseProgram(hProgram)
@@ -86,7 +88,7 @@ class SampleRenderWorker : OpenGLRenderer.Worker {
         val th = GLES20.glGetUniformLocation(hProgram, "sTexture")
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, id)
         GLES20.glUniform1i(th, 0)
 
         GLES20.glVertexAttribPointer(ph, 2, GLES20.GL_FLOAT, false, 4 * 2, verticesBuffer)
@@ -95,7 +97,7 @@ class SampleRenderWorker : OpenGLRenderer.Worker {
         GLES20.glEnableVertexAttribArray(tch)
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
-        GLES20.glFlush()
+//        GLES20.glFlush()
 
         // draw
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
@@ -103,7 +105,7 @@ class SampleRenderWorker : OpenGLRenderer.Worker {
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
 
-//        val bitmap = Bitmap.createBitmap(1000, 1000, Bitmap.Config.ARGB_8888)
+//        val bitmap = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888)
 //        bitmap.eraseColor(Color.RED)
 
         val bitmap = BitmapFactory.decodeByteArray( byteArray, 0, byteArray.size )

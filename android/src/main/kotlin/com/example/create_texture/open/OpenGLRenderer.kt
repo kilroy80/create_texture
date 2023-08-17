@@ -1,10 +1,7 @@
-package com.example.create_texture
+package com.example.create_texture.open
 
 import android.graphics.SurfaceTexture
 import android.opengl.GLUtils
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.Looper
 import android.util.Log
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
@@ -14,7 +11,8 @@ import javax.microedition.khronos.egl.EGLSurface
 
 class OpenGLRenderer(
     private val texture: SurfaceTexture,
-    private val worker: Worker) : Runnable {
+    private val worker: Worker
+) : Runnable {
 
     private lateinit  var egl: EGL10
     private lateinit var eglDisplay: EGLDisplay
