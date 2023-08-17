@@ -57,7 +57,7 @@ class SampleRenderWorker : CreateRenderer.Worker {
 
         hProgram = loadShader(vss, fss)
 
-        GLES20.glClearColor(0f, 0f, 0f, 1f)
+//        GLES20.glClearColor(0f, 0f, 0f, 1f)
 
 //        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
 //        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
@@ -77,7 +77,10 @@ class SampleRenderWorker : CreateRenderer.Worker {
 //        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
 
 //        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT or GLES20.GL_STENCIL_BUFFER_BIT)
-//
+
+        GLES20.glClearColor(0f, 0f, 0f, 1f)
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
+
         val id = 0
 
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
@@ -96,9 +99,6 @@ class SampleRenderWorker : CreateRenderer.Worker {
         GLES20.glEnableVertexAttribArray(ph)
         GLES20.glEnableVertexAttribArray(tch)
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
-//        GLES20.glFlush()
-
         // draw
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
@@ -113,6 +113,9 @@ class SampleRenderWorker : CreateRenderer.Worker {
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
 
         bitmap.recycle()
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
+        GLES20.glFlush()
 
         return true
     }
