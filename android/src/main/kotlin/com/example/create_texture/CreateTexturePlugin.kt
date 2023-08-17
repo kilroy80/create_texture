@@ -40,7 +40,7 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
 //    val arguments = call.arguments as Map<String, Number>
-    Log.d("create_texture", call.method + " " + call.arguments.toString())
+//    Log.d("create_texture", call.method + " " + call.arguments.toString())
 
     if (call.method.equals("create")) {
 
@@ -65,7 +65,7 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
     } else if (call.method.equals("draw")) {
 
       val textureId: Long = (call.argument("textureId") ?: 0).toLong()
-      val image: ByteArray = call.argument("image")!!
+      val image: List<ByteArray> = call.argument("image")!!
 
       this.openRenders[textureId]?.draw(image)
 

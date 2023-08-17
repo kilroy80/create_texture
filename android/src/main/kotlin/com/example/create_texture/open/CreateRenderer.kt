@@ -88,7 +88,7 @@ class CreateRenderer(
 ////        deInitGL()
 //    }
 
-    fun draw(byteArray: ByteArray): Boolean {
+    fun draw(byteArray: List<ByteArray>): Boolean {
         this.execute {
             if (worker.onDraw(byteArray)) {
                 if (!egl.eglSwapBuffers(eglDisplay, eglSurface)) {
@@ -96,7 +96,7 @@ class CreateRenderer(
                 }
             }
 
-            Log.d(LOG_TAG, "OpenGL draw")
+//            Log.d(LOG_TAG, "OpenGL draw")
         }
 
         return true
@@ -196,7 +196,7 @@ class CreateRenderer(
 
     interface Worker {
         fun onCreate()
-        fun onDraw(byteArray: ByteArray): Boolean
+        fun onDraw(byteArray: List<ByteArray>): Boolean
         fun onDispose()
     }
 }

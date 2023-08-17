@@ -15,7 +15,7 @@ class OpenGLTextureController {
     return textureId;
   }
 
-  Future<void> draw(Uint8List buffers) async {
+  Future<void> draw(List<Uint8List> buffers) async {
     return CreateTexturePlatform.instance.draw(buffers);
   }
 

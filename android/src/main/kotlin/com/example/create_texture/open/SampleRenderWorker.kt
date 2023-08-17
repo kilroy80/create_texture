@@ -1,14 +1,16 @@
 package com.example.create_texture.open
 
+import android.R.attr.rotation
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.opengl.GLES20
 import android.opengl.GLUtils
+import android.renderscript.Allocation
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
-import kotlin.math.sin
+
 
 class SampleRenderWorker : CreateRenderer.Worker {
 
@@ -43,7 +45,7 @@ class SampleRenderWorker : CreateRenderer.Worker {
 //        val vertices = floatArrayOf(1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f)
         val vertices = floatArrayOf(1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f)
 //        val textureVertices = floatArrayOf(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f)
-        val textureVertices = floatArrayOf(0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f)
+        val textureVertices = floatArrayOf(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f)
 
         verticesBuffer = ByteBuffer.allocateDirect(vertices.size * 4)
             .order(ByteOrder.nativeOrder()).asFloatBuffer()
@@ -70,7 +72,7 @@ class SampleRenderWorker : CreateRenderer.Worker {
 //        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
     }
 
-    override fun onDraw(byteArray: ByteArray): Boolean {
+    override fun onDraw(byteArray: List<ByteArray>): Boolean {
 //        _tick += Math.PI / 60
 //        val green = ((sin(_tick) + 1) / 2).toFloat()
 //        GLES20.glClearColor(0f, green, 0f, 1f)
@@ -108,7 +110,9 @@ class SampleRenderWorker : CreateRenderer.Worker {
 //        val bitmap = Bitmap.createBitmap(500, 500, Bitmap.Config.ARGB_8888)
 //        bitmap.eraseColor(Color.RED)
 
-        val bitmap = BitmapFactory.decodeByteArray( byteArray, 0, byteArray.size )
+        val bitmap = BitmapFactory.decodeByteArray( byteArray[0], 0, byteArray[0].size )
+
+//        val bitmap = convert(byteArray)
 
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
 
@@ -148,5 +152,40 @@ class SampleRenderWorker : CreateRenderer.Worker {
         GLES20.glLinkProgram(program)
 
         return program
+    }
+
+    fun convert(bytesList: List<ByteArray>): Bitmap {
+        val Y = ByteBuffer.wrap(bytesList[0])
+        val U = ByteBuffer.wrap(bytesList[1])
+        val V = ByteBuffer.wrap(bytesList[2])
+
+        val Yb = Y.remaining()
+        val Ub = U.remaining()
+        val Vb = V.remaining()
+
+        val data = ByteArray(Yb + Ub + Vb)
+
+        Y[data, 0, Yb]
+        V[data, Yb, Vb]
+        U[data, Yb + Vb, Ub]
+
+        val bitmapRaw = Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888)
+        bitmapRaw.eraseColor(Color.RED)
+
+        return bitmapRaw
+
+//        val bitmapRaw = Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888)
+//        val bmData: Allocation = renderScriptNV21ToRGBA888(
+//            mRegistrar.context(),
+//            imageWidth,
+//            imageHeight,
+//            data
+//        )
+//        bmData.copyTo(bitmapRaw)
+//
+//        val matrix = Matrix()
+//        matrix.postRotate(rotation)
+//        val finalbitmapRaw =
+//            Bitmap.createBitmap(bitmapRaw, 0, 0, bitmapRaw.width, bitmapRaw.height, matrix, true)
     }
 }

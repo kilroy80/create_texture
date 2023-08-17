@@ -31,7 +31,7 @@ abstract class CreateTexturePlatform extends PlatformInterface {
     throw UnimplementedError('initialize() has not been implemented.');
   }
 
-  Future<void> draw(Uint8List buffers) async {
+  Future<void> draw(List<Uint8List> buffers) async {
     throw UnimplementedError('draw() has not been implemented.');
   }
 

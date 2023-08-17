@@ -58,9 +58,9 @@ class _MyAppState extends State<MyApp> {
     var buffers = bytes.buffer.asUint8List();
 
     var result = await _controller.initialize(_width, _height);
-    while (true) {
-      _controller.draw(buffers);
-    }
+    // while (true) {
+    //   _controller.draw(buffers);
+    // }
 
     setState(() {});
   }

@@ -33,7 +33,7 @@ class MockCreateTexturePlatform
   int? textureId;
 
   @override
-  Future<void> draw(Uint8List bytes) {
+  Future<void> draw(List<Uint8List> bytes) {
     // TODO: implement draw
     throw UnimplementedError();
   }
