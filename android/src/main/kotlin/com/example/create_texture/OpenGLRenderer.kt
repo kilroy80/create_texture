@@ -2,6 +2,9 @@ package com.example.create_texture
 
 import android.graphics.SurfaceTexture
 import android.opengl.GLUtils
+import android.os.Handler
+import android.os.HandlerThread
+import android.os.Looper
 import android.util.Log
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
@@ -29,19 +32,19 @@ class OpenGLRenderer(
         worker.onCreate()
         Log.d(LOG_TAG, "OpenGL init OK.")
         while (running) {
-            val loopStart = System.currentTimeMillis()
+//            val loopStart = System.currentTimeMillis()
             if (worker.onDraw()) {
                 if (!egl.eglSwapBuffers(eglDisplay, eglSurface)) {
                     Log.d(LOG_TAG, egl.eglGetError().toString())
                 }
             }
-            val waitDelta = 16 - (System.currentTimeMillis() - loopStart)
-            if (waitDelta > 0) {
-                try {
-                    Thread.sleep(waitDelta)
-                } catch (e: InterruptedException) {
-                }
-            }
+//            val waitDelta = 16 - (System.currentTimeMillis() - loopStart)
+//            if (waitDelta > 0) {
+//                try {
+//                    Thread.sleep(waitDelta)
+//                } catch (e: InterruptedException) {
+//                }
+//            }
         }
 //        worker.onDispose()
 //        deInitGL()

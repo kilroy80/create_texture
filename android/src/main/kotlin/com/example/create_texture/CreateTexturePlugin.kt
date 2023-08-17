@@ -1,18 +1,17 @@
 package com.example.create_texture
 
+import android.graphics.SurfaceTexture
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import android.util.LongSparseArray
 import androidx.annotation.NonNull
-
+import androidx.collection.ArrayMap
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-
-import android.graphics.SurfaceTexture
-import android.util.Log
-import android.util.LongSparseArray
-import androidx.collection.ArrayMap
-
 import io.flutter.view.TextureRegistry
 
 /** CreateTexturePlugin */
@@ -35,17 +34,17 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
   }
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-    val arguments = call.arguments as Map<String, Number>
+//    val arguments = call.arguments as Map<String, Number>
     Log.d("create_texture", call.method + " " + call.arguments.toString())
 
     if (call.method.equals("create")) {
 
       val entry: TextureRegistry.SurfaceTextureEntry = textures.createSurfaceTexture()
       val surfaceTexture: SurfaceTexture = entry.surfaceTexture()
-      val width = arguments["width"]!!.toInt()
-      val height = arguments["height"]!!.toInt()
+      val width: Double = call.argument("width") ?: 0.0
+      val height: Double = call.argument("height") ?: 0.0
 
-      surfaceTexture.setDefaultBufferSize(width, height)
+      surfaceTexture.setDefaultBufferSize(width.toInt(), height.toInt())
       surfaceTextures[entry.id()] = surfaceTexture
 //      val worker = SampleRenderWorker()
 //      val render = OpenGLRenderer(surfaceTexture, worker)
@@ -54,11 +53,12 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
 
     } else if (call.method.equals("draw")) {
 
-      val textureId = arguments["textureId"]!!.toLong()
+      val textureId: Long = (call.argument("textureId") ?: 0).toLong()
+      val image: ByteArray = call.argument("image")!!
 
       val surfaceTexture: SurfaceTexture? = surfaceTextures[textureId]
       if (surfaceTexture != null) {
-        val worker = SampleRenderWorker()
+        val worker = SampleRenderWorker(image)
         val render = OpenGLRenderer(surfaceTexture, worker)
         renders.put(textureId, render)
 
@@ -67,7 +67,7 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
 
     } else if (call.method.equals("dispose")) {
 
-      val textureId = arguments["textureId"]!!.toLong()
+      val textureId: Long = call.argument("textureId") ?: 0
       val render: OpenGLRenderer = renders.get(textureId)
       render.onDispose()
       renders.delete(textureId)

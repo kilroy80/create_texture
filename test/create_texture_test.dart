@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:create_texture/create_texture.dart';
 import 'package:create_texture/create_texture_platform_interface.dart';
@@ -31,7 +33,7 @@ class MockCreateTexturePlatform
   int? textureId;
 
   @override
-  Future<void> draw() {
+  Future<void> draw(Uint8List bytes) {
     // TODO: implement draw
     throw UnimplementedError();
   }

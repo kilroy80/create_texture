@@ -1,4 +1,6 @@
 
+import 'dart:typed_data';
+
 import 'create_texture_platform_interface.dart';
 
 class CreateTexture {
@@ -13,8 +15,8 @@ class OpenGLTextureController {
     return textureId;
   }
 
-  Future<void> draw() async {
-    return CreateTexturePlatform.instance.draw();
+  Future<void> draw(Uint8List buffers) async {
+    return CreateTexturePlatform.instance.draw(buffers);
   }
 
   Future<void> dispose() async {

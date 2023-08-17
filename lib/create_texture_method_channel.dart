@@ -22,9 +22,10 @@ class MethodChannelCreateTexture extends CreateTexturePlatform {
   }
 
   @override
-  Future<void> draw() async {
+  Future<void> draw(Uint8List buffers) async {
     await methodChannel.invokeMethod('draw', {
       'textureId': textureId,
+      'image': buffers,
     });
   }
 

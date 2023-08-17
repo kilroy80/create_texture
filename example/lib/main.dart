@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:create_texture/create_texture.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() => runApp(MyApp());
 
@@ -15,7 +16,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final _controller = OpenGLTextureController();
   final _width = 300.0;
-  final _height = 300.0;
+  final _height = 500.0;
 
   @override
   initState() {
@@ -52,8 +53,13 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> initializeController() async {
-    await _controller.initialize(_width, _height);
-    _controller.draw();
+
+    final ByteData bytes = await rootBundle.load('assets/images/img_avatar1.png');
+    var buffers = bytes.buffer.asUint8List();
+
+    var result = await _controller.initialize(_width, _height);
+      _controller.draw(buffers);
+
     setState(() {});
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'create_texture_method_channel.dart';
@@ -29,7 +31,7 @@ abstract class CreateTexturePlatform extends PlatformInterface {
     throw UnimplementedError('initialize() has not been implemented.');
   }
 
-  Future<void> draw() async {
+  Future<void> draw(Uint8List buffers) async {
     throw UnimplementedError('draw() has not been implemented.');
   }
 
