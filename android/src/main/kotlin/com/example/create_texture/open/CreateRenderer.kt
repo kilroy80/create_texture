@@ -14,6 +14,7 @@ import javax.microedition.khronos.egl.EGLSurface
 
 class CreateRenderer(
     private val texture: SurfaceTexture,
+    private val textureId: Int,
     private val width: Double,
     private val height: Double
 ) {
@@ -24,7 +25,7 @@ class CreateRenderer(
     private var eglSurface: EGLSurface? = null
     private var running = true
 
-    private lateinit var worker: SampleRenderWorker
+    private lateinit var worker: Worker
 
     var renderThread: HandlerThread? = null
     var renderHandler : Handler? = null
@@ -43,7 +44,7 @@ class CreateRenderer(
         this.executeSync {
             initGL()
 
-            worker = SampleRenderWorker()
+            worker = RGBRenderWorker(textureId)
             worker.onCreate()
 
             Log.d(LOG_TAG, "OpenGL init OK.")
@@ -88,9 +89,23 @@ class CreateRenderer(
 ////        deInitGL()
 //    }
 
-    fun draw(byteArray: List<ByteArray>): Boolean {
+    fun draw(data: ByteArray, width: Int, height: Int): Boolean {
         this.execute {
-            if (worker.onDraw(byteArray)) {
+            if (worker.onDraw(data, width, height)) {
+                if (!egl.eglSwapBuffers(eglDisplay, eglSurface)) {
+                    Log.d(LOG_TAG, egl.eglGetError().toString())
+                }
+            }
+
+//            Log.d(LOG_TAG, "OpenGL draw")
+        }
+
+        return true
+    }
+
+    fun updateTextureYUV(byteArray: List<ByteArray>, width: Int, height: Int, strides: IntArray): Boolean {
+        this.execute {
+            if (worker.updateTexture(byteArray, width, height, strides)) {
                 if (!egl.eglSwapBuffers(eglDisplay, eglSurface)) {
                     Log.d(LOG_TAG, egl.eglGetError().toString())
                 }
@@ -196,7 +211,8 @@ class CreateRenderer(
 
     interface Worker {
         fun onCreate()
-        fun onDraw(byteArray: List<ByteArray>): Boolean
+        fun updateTexture(byteArray: List<ByteArray>, width: Int, height: Int, strides: IntArray): Boolean
+        fun onDraw(data: ByteArray, width: Int, height: Int): Boolean
         fun onDispose()
     }
 }

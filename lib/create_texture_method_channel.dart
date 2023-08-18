@@ -22,10 +22,24 @@ class MethodChannelCreateTexture extends CreateTexturePlatform {
   }
 
   @override
-  Future<void> draw(List<Uint8List> buffers) async {
-    await methodChannel.invokeMethod('draw', {
+  Future<void> updateTexture(Uint8List data, int width, int height) async {
+    await methodChannel.invokeMethod('updateTexture', {
       'textureId': textureId,
-      'image': buffers,
+      'data': data,
+      'width': width,
+      'height': height,
+    });
+  }
+
+  @override
+  Future<void> updateTextureYUV(
+      List<Uint8List> data, int width, int height, List<int> strides) async {
+    await methodChannel.invokeMethod('updateTextureYUV', {
+      'textureId': textureId,
+      'data': data,
+      'width': width,
+      'height': height,
+      'strides': strides
     });
   }
 

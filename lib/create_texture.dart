@@ -15,8 +15,14 @@ class OpenGLTextureController {
     return textureId;
   }
 
-  Future<void> draw(List<Uint8List> buffers) async {
-    return CreateTexturePlatform.instance.draw(buffers);
+  Future<void> updateTexture(Uint8List data, int width, int height) async {
+    return CreateTexturePlatform.instance.updateTexture(data, width, height);
+  }
+
+  Future<void> updateTextureYUV(
+      List<Uint8List> data, int width, int height, List<int> strides) async {
+    return CreateTexturePlatform.instance.updateTextureYUV(
+        data, width, height, strides);
   }
 
   Future<void> dispose() async {

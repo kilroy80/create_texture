@@ -58,16 +58,18 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
 //      renders[textureId] = render
 
 //      val worker = SampleRenderWorker()
-      val render = CreateRenderer(surfaceTexture, width, height)
+      val render = CreateRenderer(surfaceTexture, textureId.toInt(), width, height)
       openRenders.put(entry.id(), render)
       result.success(entry.id())
 
-    } else if (call.method.equals("draw")) {
+    } else if (call.method.equals("updateTexture")) {
 
       val textureId: Long = (call.argument("textureId") ?: 0).toLong()
-      val image: List<ByteArray> = call.argument("image")!!
+      val data: ByteArray = call.argument("data")!!
+      val width: Int = call.argument("width") ?: 0
+      val height: Int = call.argument("height") ?: 0
 
-      this.openRenders[textureId]?.draw(image)
+      this.openRenders[textureId]?.draw(data, width, height)
 
 //      val surfaceTexture: SurfaceTexture? = surfaceTextures[textureId]
 //      if (surfaceTexture != null) {
@@ -76,6 +78,25 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
 //        renders.put(textureId, render)
 
         result.success(null)
+//      }
+
+    } else if (call.method.equals("updateTextureYUV")) {
+
+      val textureId: Long = (call.argument("textureId") ?: 0).toLong()
+      val data: List<ByteArray> = call.argument("data")!!
+      val width: Int = call.argument("width") ?: 0
+      val height: Int = call.argument("height") ?: 0
+      var strides: IntArray? = call.argument("strides")
+
+      this.openRenders[textureId]?.updateTextureYUV(data, width, height, strides!!)
+
+//      val surfaceTexture: SurfaceTexture? = surfaceTextures[textureId]
+//      if (surfaceTexture != null) {
+//        val worker = SampleRenderWorker(image)
+//        val render = OpenGLRenderer(surfaceTexture, worker)
+//        renders.put(textureId, render)
+
+      result.success(null)
 //      }
 
     } else if (call.method.equals("dispose")) {
