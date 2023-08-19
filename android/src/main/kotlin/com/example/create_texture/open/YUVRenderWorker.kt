@@ -1,6 +1,7 @@
 package com.example.create_texture.open
 
 import android.opengl.GLES20
+import android.util.Log
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -9,7 +10,9 @@ import kotlin.math.min
 
 class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
 
-    private val vss =
+    private val tag = "YUVRenderWorker"
+
+    private val VERTEX_SHADER_STRING =
         "varying vec2 interp_tc;\n" +
         "attribute vec4 in_pos;\n" +
         "attribute vec2 in_tc;\n" +
@@ -19,7 +22,7 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
         "  interp_tc = in_tc;\n" +
         "}\n"
 
-    private val fss =
+    private val YUV_FRAGMENT_SHADER_STRING =
         "precision mediump float;\n" +
         "varying vec2 interp_tc;\n" +
         "\n" +
@@ -37,6 +40,16 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
         "                      y + 1.77 * u, 1);\n" +
         "}\n"
 
+    private val OES_FRAGMENT_SHADER_STRING =
+        "#extension GL_OES_EGL_image_external : require\n" +
+        "precision mediump float;\n" +
+        "varying vec2 interp_tc;\n" +
+        "\n" +
+        "uniform samplerExternalOES oes_tex;\n" +
+        "\n" +
+        "void main() {\n" +
+        "  gl_FragColor = texture2D(oes_tex, interp_tc);\n" +
+        "}\n"
 
     private var yuvProgram = 0
     private var oesProgram = 0
@@ -55,7 +68,7 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
 
     override fun onCreate() {
 
-        texLeft = (0 - 50) / 50.0f  // 0.0f
+        texLeft = (0 - 50) / 50.0f  // -1.0f
         texTop = (50 - 0) / 50.0f   // 1.0f
         texRight = min(1.0f, (0 + 720 - 50) / 50.0f)    // 1.0f
         texBottom = max(-1.0f, (50 - 0 - 480) / 50.0f)  // -1.0f
@@ -75,7 +88,7 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
         )
         textureCoords = directNativeFloatBuffer(textureCoordinatesFloat)
 
-        yuvProgram = createProgram(vss, fss)
+        yuvProgram = createProgram(VERTEX_SHADER_STRING, YUV_FRAGMENT_SHADER_STRING)
         createTextures(yuvProgram)
 
         GLES20.glClearColor(0.15f, 0.15f, 0.15f, 1.0f)
@@ -114,7 +127,7 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
                 val w: Int = if (i == 0) width else width / 2
                 val h: Int = if (i == 0) height else height / 2
 
-                var buffer = ByteBuffer.allocateDirect(strides[i] * height)
+                val buffer = ByteBuffer.allocateDirect(strides[i] * height)
 //                var buffer = ByteBuffer.allocateDirect(byteArray[i].size)
                 buffer.put(byteArray[i])
                 buffer.position(0)
@@ -133,7 +146,7 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
 
         val posLocation = GLES20.glGetAttribLocation(yuvProgram, "in_pos")
         if (posLocation == -1) {
-            throw java.lang.RuntimeException("Could not get attrib location for in_pos")
+            throw Exception("Could not get attrib location for in_pos")
         }
         GLES20.glEnableVertexAttribArray(posLocation)
         GLES20.glVertexAttribPointer(
@@ -141,7 +154,7 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
         )
         val texLocation = GLES20.glGetAttribLocation(yuvProgram, "in_tc")
         if (texLocation == -1) {
-            throw java.lang.RuntimeException("Could not get attrib location for in_tc")
+            throw Exception("Could not get attrib location for in_tc")
         }
         GLES20.glEnableVertexAttribArray(texLocation)
         GLES20.glVertexAttribPointer(
@@ -159,7 +172,6 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
     }
 
     override fun onDraw(byteArray: ByteArray, width: Int, height: Int): Boolean {
-
         return false
     }
 
@@ -217,11 +229,11 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
         GLES20.glCompileShader(shader)
         GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, result, 0)
         if (result[0] != GLES20.GL_TRUE) {
-//            Log.e(
-//                TAG, "Could not compile shader " + shaderType + ":" +
-//                        GLES20.glGetShaderInfoLog(shader)
-//            )
-            throw java.lang.RuntimeException(GLES20.glGetShaderInfoLog(shader))
+            Log.e(
+                tag, "Could not compile shader " + shaderType + ":" +
+                        GLES20.glGetShaderInfoLog(shader)
+            )
+            throw Exception(GLES20.glGetShaderInfoLog(shader))
         }
         checkNoGLES2Error()
         return shader
@@ -241,8 +253,9 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
         val fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource)
         val program = GLES20.glCreateProgram()
         if (program == 0) {
-            throw java.lang.RuntimeException("Could not create program")
+            throw Exception("Could not create program")
         }
+
         GLES20.glAttachShader(program, vertexShader)
         GLES20.glAttachShader(program, fragmentShader)
         GLES20.glLinkProgram(program)
@@ -251,11 +264,11 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
         )
         GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0)
         if (linkStatus[0] != GLES20.GL_TRUE) {
-//            Log.e(
-//                TAG, "Could not link program: " +
-//                        GLES20.glGetProgramInfoLog(program)
-//            )
-            throw java.lang.RuntimeException(GLES20.glGetProgramInfoLog(program))
+            Log.e(
+                tag, "Could not link program: " +
+                        GLES20.glGetProgramInfoLog(program)
+            )
+            throw Exception(GLES20.glGetProgramInfoLog(program))
         }
         checkNoGLES2Error()
         return program
