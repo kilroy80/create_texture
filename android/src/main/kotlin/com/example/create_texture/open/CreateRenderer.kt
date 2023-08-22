@@ -89,9 +89,9 @@ class CreateRenderer(
 ////        deInitGL()
 //    }
 
-    fun draw(data: ByteArray, width: Int, height: Int): Boolean {
+    fun updateTexture(data: ByteArray, width: Int, height: Int): Boolean {
         this.execute {
-            if (worker.onDraw(data, width, height)) {
+            if (worker.updateTexture(data, width, height)) {
                 if (!egl.eglSwapBuffers(eglDisplay, eglSurface)) {
                     Log.d(LOG_TAG, egl.eglGetError().toString())
                 }
@@ -105,7 +105,7 @@ class CreateRenderer(
 
     fun updateTextureYUV(byteArray: List<ByteArray>, width: Int, height: Int, strides: IntArray): Boolean {
         this.execute {
-            if (worker.updateTexture(byteArray, width, height, strides)) {
+            if (worker.updateTextureYUV(byteArray, width, height, strides)) {
                 if (!egl.eglSwapBuffers(eglDisplay, eglSurface)) {
                     Log.d(LOG_TAG, egl.eglGetError().toString())
                 }
@@ -211,8 +211,8 @@ class CreateRenderer(
 
     interface Worker {
         fun onCreate()
-        fun updateTexture(byteArray: List<ByteArray>, width: Int, height: Int, strides: IntArray): Boolean
-        fun onDraw(data: ByteArray, width: Int, height: Int): Boolean
+        fun updateTextureYUV(byteArray: List<ByteArray>, width: Int, height: Int, strides: IntArray): Boolean
+        fun updateTexture(data: ByteArray, width: Int, height: Int): Boolean
         fun onDispose()
     }
 }

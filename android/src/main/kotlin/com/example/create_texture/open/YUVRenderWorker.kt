@@ -107,7 +107,7 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
 //            GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE.toFloat())
     }
 
-    override fun updateTexture(
+    override fun updateTextureYUV(
         byteArray: List<ByteArray>,
         width: Int,
         height: Int,
@@ -119,6 +119,20 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
         GLES20.glUseProgram(yuvProgram)
 
 //        glTexSubImage2D
+
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
+        // Unbind the texture as a precaution.
+//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
+            GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR.toFloat())
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
+            GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR.toFloat())
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
+            GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE.toFloat())
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
+            GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE.toFloat())
 
         for (i in 0..2) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + i)
@@ -163,15 +177,15 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
 
-        GLES20.glDisableVertexAttribArray(posLocation)
-        GLES20.glDisableVertexAttribArray(texLocation)
+//        GLES20.glDisableVertexAttribArray(posLocation)
+//        GLES20.glDisableVertexAttribArray(texLocation)
 
         checkNoGLES2Error()
 
         return true
     }
 
-    override fun onDraw(byteArray: ByteArray, width: Int, height: Int): Boolean {
+    override fun updateTexture(data: ByteArray, width: Int, height: Int): Boolean {
         return false
     }
 

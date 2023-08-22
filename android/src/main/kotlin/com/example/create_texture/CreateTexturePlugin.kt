@@ -69,7 +69,7 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
       val width: Int = call.argument("width") ?: 0
       val height: Int = call.argument("height") ?: 0
 
-      this.openRenders[textureId]?.draw(data, width, height)
+      this.openRenders[textureId]?.updateTexture(data, width, height)
 
 //      val surfaceTexture: SurfaceTexture? = surfaceTextures[textureId]
 //      if (surfaceTexture != null) {

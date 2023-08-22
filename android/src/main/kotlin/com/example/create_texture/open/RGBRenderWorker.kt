@@ -9,6 +9,8 @@ import java.nio.FloatBuffer
 
 class RGBRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
 
+    private val tag = "RGBRenderWorker"
+
     private lateinit var verticesBuffer: FloatBuffer
     private lateinit var textureBuffer: FloatBuffer
     private var openGLProgram = 0
@@ -47,17 +49,17 @@ class RGBRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
         openGLProgram = loadShader(vss, fss)
     }
 
-    override fun updateTexture(
+    override fun updateTextureYUV(
         byteArray: List<ByteArray>,
         width: Int,
         height: Int,
         strides: IntArray
     ): Boolean {
         val bytes = YuvConverter.YUVtoNV21(byteArray, strides, width, height)
-        return onDraw(bytes, width, height)
+        return updateTexture(bytes, width, height)
     }
 
-    override fun onDraw(byteArray: ByteArray, width: Int, height: Int): Boolean {
+    override fun updateTexture(byteArray: ByteArray, width: Int, height: Int): Boolean {
 
         GLES20.glClearColor(0f, 0f, 0f, 1f)
 //        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
@@ -73,16 +75,16 @@ class RGBRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         GLES20.glUniform1i(th, 0)
 
-        GLES20.glVertexAttribPointer(ph, 2, GLES20.GL_FLOAT, false, 4 * 2, verticesBuffer)
-        GLES20.glVertexAttribPointer(tch, 2, GLES20.GL_FLOAT, false, 4 * 2, textureBuffer)
-        GLES20.glEnableVertexAttribArray(ph)
-        GLES20.glEnableVertexAttribArray(tch)
-
         // draw
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR)
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
+
+        GLES20.glVertexAttribPointer(ph, 2, GLES20.GL_FLOAT, false, 4 * 2, verticesBuffer)
+        GLES20.glVertexAttribPointer(tch, 2, GLES20.GL_FLOAT, false, 4 * 2, textureBuffer)
+        GLES20.glEnableVertexAttribArray(ph)
+        GLES20.glEnableVertexAttribArray(tch)
 
         // texture
         val buffer = ByteBuffer.allocateDirect(byteArray.size)
