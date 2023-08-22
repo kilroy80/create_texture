@@ -92,19 +92,6 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
         createTextures(yuvProgram)
 
         GLES20.glClearColor(0.15f, 0.15f, 0.15f, 1.0f)
-
-//        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
-//        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_LUMINANCE,
-//            720, 480, 0, GLES20.GL_LUMINANCE, GLES20.GL_UNSIGNED_BYTE, null)
-//        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-//            GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR.toFloat())
-//        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-//            GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR.toFloat())
-//        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-//            GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE.toFloat())
-//        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-//            GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE.toFloat())
     }
 
     override fun updateTextureYUV(
@@ -118,22 +105,6 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
 
         GLES20.glUseProgram(yuvProgram)
 
-//        glTexSubImage2D
-
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-        // Unbind the texture as a precaution.
-//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-            GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR.toFloat())
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-            GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR.toFloat())
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-            GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE.toFloat())
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-            GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE.toFloat())
-
         for (i in 0..2) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + i)
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, yuvTextures[i])
@@ -141,16 +112,24 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
                 val w: Int = if (i == 0) width else width / 2
                 val h: Int = if (i == 0) height else height / 2
 
-                val buffer = ByteBuffer.allocateDirect(strides[i] * height)
+                val buffer = ByteBuffer.allocateDirect(strides[i] * h)
 //                var buffer = ByteBuffer.allocateDirect(byteArray[i].size)
                 buffer.put(byteArray[i])
                 buffer.position(0)
 
-                GLES20.glTexImage2D(
-                    GLES20.GL_TEXTURE_2D, 0, GLES20.GL_LUMINANCE,
-                    w, h, 0, GLES20.GL_LUMINANCE, GLES20.GL_UNSIGNED_BYTE,
-                    buffer
-                )
+                if (i == 0) {
+                    GLES20.glTexImage2D(
+                        GLES20.GL_TEXTURE_2D, 0, GLES20.GL_LUMINANCE,
+                        w, h, 0, GLES20.GL_LUMINANCE, GLES20.GL_UNSIGNED_BYTE,
+                        buffer
+                    )
+                } else {
+                    GLES20.glTexImage2D(
+                        GLES20.GL_TEXTURE_2D, 0, GLES20.GL_LUMINANCE_ALPHA,
+                        w, h, 0, GLES20.GL_LUMINANCE_ALPHA, GLES20.GL_UNSIGNED_BYTE,
+                        buffer
+                    )
+                }
             }
         }
 
@@ -177,8 +156,8 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
 
-//        GLES20.glDisableVertexAttribArray(posLocation)
-//        GLES20.glDisableVertexAttribArray(texLocation)
+        GLES20.glDisableVertexAttribArray(posLocation)
+        GLES20.glDisableVertexAttribArray(texLocation)
 
         checkNoGLES2Error()
 
