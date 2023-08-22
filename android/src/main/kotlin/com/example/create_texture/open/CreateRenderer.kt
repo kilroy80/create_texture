@@ -44,7 +44,7 @@ class CreateRenderer(
         this.executeSync {
             initGL()
 
-            worker = YUVRenderWorker(textureId)
+            worker = RGBRenderWorker(textureId)
             worker.onCreate()
 
             Log.d(LOG_TAG, "OpenGL init OK.")
