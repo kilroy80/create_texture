@@ -13,8 +13,9 @@ class MethodChannelCreateTexture extends CreateTexturePlatform {
   // int? textureId;
 
   @override
-  Future<int> initialize(double width, double height) async {
+  Future<int> initialize(int type, double width, double height) async {
     textureId = await methodChannel.invokeMethod('create', {
+      'type': type,
       'width': width,
       'height': height,
     });
@@ -22,19 +23,20 @@ class MethodChannelCreateTexture extends CreateTexturePlatform {
   }
 
   @override
-  Future<void> updateTexture(Uint8List data, int width, int height) async {
+  Future<void> updateTexture(Uint8List data, int width, int height, [List<int>? strides]) async {
     await methodChannel.invokeMethod('updateTexture', {
       'textureId': textureId,
       'data': data,
       'width': width,
       'height': height,
+      'strides': strides
     });
   }
 
   @override
-  Future<void> updateTextureYUV(
+  Future<void> updateTextureByList(
       List<Uint8List> data, int width, int height, List<int> strides) async {
-    await methodChannel.invokeMethod('updateTextureYUV', {
+    await methodChannel.invokeMethod('updateTextureByList', {
       'textureId': textureId,
       'data': data,
       'width': width,

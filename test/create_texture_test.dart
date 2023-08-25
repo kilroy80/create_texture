@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:create_texture/create_texture.dart';
 import 'package:create_texture/create_texture_platform_interface.dart';
 import 'package:create_texture/create_texture_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -11,16 +10,13 @@ class MockCreateTexturePlatform
     implements CreateTexturePlatform {
 
   @override
-  Future<String?> getPlatformVersion() => Future.value('42');
-
-  @override
   Future<void> dispose() {
     // TODO: implement dispose
     throw UnimplementedError();
   }
 
   @override
-  Future<int> initialize(double width, double height) {
+  Future<int> initialize(int type, double width, double height) {
     // TODO: implement initialize
     throw UnimplementedError();
   }
@@ -39,8 +35,8 @@ class MockCreateTexturePlatform
   }
 
   @override
-  Future<void> updateTextureYUV(List<Uint8List> data, int width, int height, List<int> strides) {
-    // TODO: implement updateTextureYUV
+  Future<void> updateTextureByList(List<Uint8List> data, int width, int height, List<int> strides) {
+    // TODO: implement updateTextureByList
     throw UnimplementedError();
   }
 }

@@ -65,26 +65,30 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
     // Texture UV coordinates.
     private var textureCoords: FloatBuffer? = null
 
-
     override fun onCreate() {
 
-        texLeft = (0 - 50) / 50.0f  // -1.0f
-        texTop = (50 - 0) / 50.0f   // 1.0f
-        texRight = min(1.0f, (0 + 720 - 50) / 50.0f)    // 1.0f
-        texBottom = max(-1.0f, (50 - 0 - 480) / 50.0f)  // -1.0f
-        val textureVeticesFloat = floatArrayOf(
-            texLeft, texTop,
-            texLeft, texBottom,
-            texRight, texTop,
-            texRight, texBottom
+//        texLeft = (0 - 50) / 50.0f  // -1.0f
+//        texTop = (50 - 0) / 50.0f   // 1.0f
+//        texRight = min(1.0f, (0 + 720 - 50) / 50.0f)    // 1.0f
+//        texBottom = max(-1.0f, (50 - 0 - 480) / 50.0f)  // -1.0f
+
+        val textureVerticesFloat = floatArrayOf(
+            -1.0f, 1.0f,    // left top
+            -1.0f, -1.0f,   // left bottom
+            1.0f, 1.0f,     // right top
+            1.0f, -1.0f     // right bottom
         )
-        textureVertices = directNativeFloatBuffer(textureVeticesFloat)
+        textureVertices = directNativeFloatBuffer(textureVerticesFloat)
 
         val textureCoordinatesFloat = floatArrayOf(
-            0f, 0f,     // left top
-            0f, 1f,     // left bottom
-            1f, 0f,     // right top
-            1f, 1f      // right bottom
+//            0.0f, 0.0f,     // left top
+//            0.0f, 1.0f,     // left bottom
+//            1.0f, 0.0f,     // right top
+//            1.0f, 1.0f      // right bottom
+            1.0f, 0.0f,     // left top
+            0.0f, 0.0f,     // left bottom
+            1.0f, 1.0f,     // right top
+            0.0f, 1.0f      // right bottom
         )
         textureCoords = directNativeFloatBuffer(textureCoordinatesFloat)
 
@@ -94,7 +98,11 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
         GLES20.glClearColor(0.15f, 0.15f, 0.15f, 1.0f)
     }
 
-    override fun updateTextureYUV(
+    override fun updateTexture(byteArray: ByteArray, width: Int, height: Int): Boolean {
+        return false
+    }
+
+    override fun updateTextureByList(
         byteArray: List<ByteArray>,
         width: Int,
         height: Int,
@@ -164,12 +172,7 @@ class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
         return true
     }
 
-    override fun updateTexture(data: ByteArray, width: Int, height: Int): Boolean {
-        return false
-    }
-
     override fun onDispose() {}
-
 
     private fun createTextures(yuvProgram: Int) {
         this.yuvProgram = yuvProgram

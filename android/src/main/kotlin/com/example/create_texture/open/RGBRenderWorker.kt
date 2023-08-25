@@ -13,17 +13,20 @@ class RGBRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
 
     private lateinit var verticesBuffer: FloatBuffer
     private lateinit var textureBuffer: FloatBuffer
-    private var openGLProgram = 0
 
-    private val vss = "attribute vec2 vPosition;\n" +
+    private var rgbProgram = 0
+
+    private val VERTEX_SHADER_STRING =
+            "attribute vec4 vPosition;\n" +
             "attribute vec2 vTexCoord;\n" +
             "varying vec2 texCoord;\n" +
             "void main() {\n" +
             "  texCoord = vTexCoord;\n" +
-            "  gl_Position = vec4 ( vPosition.x, vPosition.y, 0.0, 1.0 );\n" +
+            "  gl_Position = vPosition;\n" +
             "}"
 
-    private val fss = "precision mediump float;\n" +
+    private val RGB_FRAGMENT_SHADER_STRING =
+            "precision mediump float;\n" +
             "uniform sampler2D sTexture;\n" +
             "varying vec2 texCoord;\n" +
             "void main() {\n" +
@@ -31,62 +34,46 @@ class RGBRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
             "}"
 
     override fun onCreate() {
-        val vertices = floatArrayOf(1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f)
-//        val vertices = floatArrayOf(-1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f)
-        val textureVertices = floatArrayOf(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f)
-//        val textureVertices = floatArrayOf(0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f)
+//        val vertices = floatArrayOf(1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f)
+////        val vertices = floatArrayOf(-1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f)
+//        val textureVertices = floatArrayOf(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f)
+////        val textureVertices = floatArrayOf(0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f)
 
-        verticesBuffer = ByteBuffer.allocateDirect(vertices.size * 4)
-            .order(ByteOrder.nativeOrder()).asFloatBuffer()
-        verticesBuffer.put(vertices)
-        verticesBuffer.position(0)
+        val vertices = floatArrayOf(
+            -1.0f, 1.0f,    // left top
+            -1.0f, -1.0f,   // left bottom
+            1.0f, 1.0f,     // right top
+            1.0f, -1.0f     // right bottom
+        )
+        verticesBuffer = directNativeFloatBuffer(vertices)
 
-        textureBuffer = ByteBuffer.allocateDirect(textureVertices.size * 4)
-            .order(ByteOrder.nativeOrder()).asFloatBuffer()
-        textureBuffer.put(textureVertices)
-        textureBuffer.position(0)
+        val textureVertices = floatArrayOf(
+            1.0f, 0.0f,     // left top
+            0.0f, 0.0f,     // left bottom
+            1.0f, 1.0f,     // right top
+            0.0f, 1.0f      // right bottom
+        )
+        textureBuffer = directNativeFloatBuffer(textureVertices)
 
-        openGLProgram = loadShader(vss, fss)
+        rgbProgram = createProgram(VERTEX_SHADER_STRING, RGB_FRAGMENT_SHADER_STRING)
+        createTextures(rgbProgram)
     }
 
-    override fun updateTextureYUV(
-        byteArray: List<ByteArray>,
-        width: Int,
-        height: Int,
-        strides: IntArray
+    override fun updateTexture(byteArray: ByteArray,
+       width: Int,
+       height: Int,
     ): Boolean {
-        val bytes = YuvConverter.YUVtoNV21(byteArray, strides, width, height)
-        return updateTexture(bytes, width, height)
-    }
-
-    override fun updateTexture(byteArray: ByteArray, width: Int, height: Int): Boolean {
 
         GLES20.glClearColor(0f, 0f, 0f, 1f)
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
 //        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
 
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
-        GLES20.glUseProgram(openGLProgram)
-
-        val ph = GLES20.glGetAttribLocation(openGLProgram, "vPosition")
-        val tch = GLES20.glGetAttribLocation(openGLProgram, "vTexCoord")
-        val th = GLES20.glGetUniformLocation(openGLProgram, "sTexture")
-
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
-        GLES20.glUniform1i(th, 0)
-
-        // draw
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR)
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
-
-        GLES20.glVertexAttribPointer(ph, 2, GLES20.GL_FLOAT, false, 4 * 2, verticesBuffer)
-        GLES20.glVertexAttribPointer(tch, 2, GLES20.GL_FLOAT, false, 4 * 2, textureBuffer)
-        GLES20.glEnableVertexAttribArray(ph)
-        GLES20.glEnableVertexAttribArray(tch)
+        GLES20.glUseProgram(rgbProgram)
 
         // texture
+        GLES20.glUniform1i(GLES20.glGetUniformLocation(rgbProgram, "sTexture"), 0)
+
         val buffer = ByteBuffer.allocateDirect(byteArray.size)
         buffer.put(byteArray)
         buffer.position(0)
@@ -104,39 +91,117 @@ class RGBRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
 
 //        bitmap.recycle()
 
+        // vertex
+        val posLocation = GLES20.glGetAttribLocation(rgbProgram, "vPosition")
+        val texLocation = GLES20.glGetAttribLocation(rgbProgram, "vTexCoord")
+
+        GLES20.glVertexAttribPointer(
+            posLocation, 2, GLES20.GL_FLOAT, false, 4 * 2, verticesBuffer)
+        GLES20.glVertexAttribPointer(
+            texLocation, 2, GLES20.GL_FLOAT, false, 4 * 2, textureBuffer)
+
+        GLES20.glEnableVertexAttribArray(posLocation)
+        GLES20.glEnableVertexAttribArray(texLocation)
+
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
-//        GLES20.glFlush()
+
+        GLES20.glDisableVertexAttribArray(posLocation)
+        GLES20.glDisableVertexAttribArray(texLocation)
 
         return true
     }
 
+    override fun updateTextureByList(
+        byteArray: List<ByteArray>,
+        width: Int,
+        height: Int,
+        strides: IntArray
+    ): Boolean {
+        return false
+    }
+
     override fun onDispose() {}
 
-    private fun loadShader(vss: String, fss: String): Int {
-        var vshader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER)
-        GLES20.glShaderSource(vshader, vss)
-        GLES20.glCompileShader(vshader)
-        val compiled = IntArray(1)
-        GLES20.glGetShaderiv(vshader, GLES20.GL_COMPILE_STATUS, compiled, 0)
-        if (compiled[0] == 0) {
-            GLES20.glDeleteShader(vshader)
-            vshader = 0
-        }
+    private fun createTextures(program: Int) {
+        this.rgbProgram = program
 
-        var fshader = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER)
-        GLES20.glShaderSource(fshader, fss)
-        GLES20.glCompileShader(fshader)
-        GLES20.glGetShaderiv(fshader, GLES20.GL_COMPILE_STATUS, compiled, 0)
-        if (compiled[0] == 0) {
-            GLES20.glDeleteShader(fshader)
-            fshader = 0
-        }
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
 
+        GLES20.glTexParameteri(
+            GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR)
+        GLES20.glTexParameteri(
+            GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
+        GLES20.glTexParameteri(
+            GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
+        GLES20.glTexParameteri(
+            GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
+
+        checkNoGLES2Error()
+    }
+
+    private fun abortUnless(condition: Boolean, msg: String) {
+        if (!condition) {
+            throw RuntimeException(msg)
+        }
+    }
+
+    private fun checkNoGLES2Error() {
+        val error = GLES20.glGetError()
+        abortUnless(error == GLES20.GL_NO_ERROR, "GLES20 error: $error")
+    }
+
+    private fun loadShader(shaderType: Int, source: String): Int {
+        val result = intArrayOf(
+            GLES20.GL_FALSE
+        )
+        val shader = GLES20.glCreateShader(shaderType)
+        GLES20.glShaderSource(shader, source)
+        GLES20.glCompileShader(shader)
+        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, result, 0)
+        if (result[0] != GLES20.GL_TRUE) {
+            Log.e(
+                tag, "Could not compile shader " + shaderType + ":" +
+                        GLES20.glGetShaderInfoLog(shader)
+            )
+            throw Exception(GLES20.glGetShaderInfoLog(shader))
+        }
+        checkNoGLES2Error()
+        return shader
+    }
+
+    private fun directNativeFloatBuffer(array: FloatArray): FloatBuffer {
+        val buffer = ByteBuffer.allocateDirect(array.size * 4).order(
+            ByteOrder.nativeOrder()
+        ).asFloatBuffer()
+        buffer.put(array)
+        buffer.flip()
+        return buffer
+    }
+
+    private fun createProgram(vertexSource: String, fragmentSource: String): Int {
+        val vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource)
+        val fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource)
         val program = GLES20.glCreateProgram()
-        GLES20.glAttachShader(program, vshader)
-        GLES20.glAttachShader(program, fshader)
-        GLES20.glLinkProgram(program)
+        if (program == 0) {
+            throw Exception("Could not create program")
+        }
 
+        GLES20.glAttachShader(program, vertexShader)
+        GLES20.glAttachShader(program, fragmentShader)
+        GLES20.glLinkProgram(program)
+        val linkStatus = intArrayOf(
+            GLES20.GL_FALSE
+        )
+        GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0)
+        if (linkStatus[0] != GLES20.GL_TRUE) {
+            Log.e(
+                tag, "Could not link program: " +
+                        GLES20.glGetProgramInfoLog(program)
+            )
+            throw Exception(GLES20.glGetProgramInfoLog(program))
+        }
+        checkNoGLES2Error()
         return program
     }
 }

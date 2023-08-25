@@ -10,8 +10,8 @@ class OpenGLTextureController {
 
   int textureId = CreateTexturePlatform.instance.textureId ?? 0;
 
-  Future<int> initialize(double width, double height) async {
-    textureId = await CreateTexturePlatform.instance.initialize(width, height);
+  Future<int> initialize(int type, double width, double height) async {
+    textureId = await CreateTexturePlatform.instance.initialize(type, width, height);
     return textureId;
   }
 
@@ -19,9 +19,9 @@ class OpenGLTextureController {
     return CreateTexturePlatform.instance.updateTexture(data, width, height);
   }
 
-  Future<void> updateTextureYUV(
+  Future<void> updateTextureByList(
       List<Uint8List> data, int width, int height, List<int> strides) async {
-    return CreateTexturePlatform.instance.updateTextureYUV(
+    return CreateTexturePlatform.instance.updateTextureByList(
         data, width, height, strides);
   }
 

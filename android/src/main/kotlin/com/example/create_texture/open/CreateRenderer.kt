@@ -15,6 +15,7 @@ import javax.microedition.khronos.egl.EGLSurface
 class CreateRenderer(
     private val texture: SurfaceTexture,
     private val textureId: Int,
+    private val type: Int,
     private val width: Double,
     private val height: Double
 ) {
@@ -27,8 +28,8 @@ class CreateRenderer(
 
     private lateinit var worker: Worker
 
-    var renderThread: HandlerThread? = null
-    var renderHandler : Handler? = null
+    private var renderThread: HandlerThread? = null
+    private var renderHandler : Handler? = null
 
     companion object {
         private const val LOG_TAG = "OpenGL.Worker"
@@ -36,7 +37,7 @@ class CreateRenderer(
 
     init {
         if (renderThread == null) {
-            renderThread = HandlerThread("flutterGlCustomRender")
+            renderThread = HandlerThread("createRenderer")
             renderThread!!.start()
 
             renderHandler = Handler(renderThread!!.looper)
@@ -44,7 +45,8 @@ class CreateRenderer(
         this.executeSync {
             initGL()
 
-            worker = RGBRenderWorker(textureId)
+            worker = if (type == 0)
+                RGBRenderWorker(textureId) else YUVRenderWorker(textureId)
             worker.onCreate()
 
             Log.d(LOG_TAG, "OpenGL init OK.")
@@ -89,9 +91,9 @@ class CreateRenderer(
 ////        deInitGL()
 //    }
 
-    fun updateTexture(data: ByteArray, width: Int, height: Int): Boolean {
+    fun updateTexture(byteArray: ByteArray, width: Int, height: Int): Boolean {
         this.execute {
-            if (worker.updateTexture(data, width, height)) {
+            if (worker.updateTexture(byteArray, width, height)) {
                 if (!egl.eglSwapBuffers(eglDisplay, eglSurface)) {
                     Log.d(LOG_TAG, egl.eglGetError().toString())
                 }
@@ -103,9 +105,9 @@ class CreateRenderer(
         return true
     }
 
-    fun updateTextureYUV(byteArray: List<ByteArray>, width: Int, height: Int, strides: IntArray): Boolean {
+    fun updateTextureByList(byteArray: List<ByteArray>, width: Int, height: Int, strides: IntArray): Boolean {
         this.execute {
-            if (worker.updateTextureYUV(byteArray, width, height, strides)) {
+            if (worker.updateTextureByList(byteArray, width, height, strides)) {
                 if (!egl.eglSwapBuffers(eglDisplay, eglSurface)) {
                     Log.d(LOG_TAG, egl.eglGetError().toString())
                 }
@@ -211,8 +213,8 @@ class CreateRenderer(
 
     interface Worker {
         fun onCreate()
-        fun updateTextureYUV(byteArray: List<ByteArray>, width: Int, height: Int, strides: IntArray): Boolean
-        fun updateTexture(data: ByteArray, width: Int, height: Int): Boolean
+        fun updateTexture(byteArray: ByteArray, width: Int, height: Int): Boolean
+        fun updateTextureByList(byteArray: List<ByteArray>, width: Int, height: Int, strides: IntArray): Boolean
         fun onDispose()
     }
 }

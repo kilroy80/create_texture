@@ -27,17 +27,17 @@ abstract class CreateTexturePlatform extends PlatformInterface {
 
   int? textureId;
 
-  Future<int> initialize(double width, double height) async {
+  Future<int> initialize(int type, double width, double height) async {
     throw UnimplementedError('initialize() has not been implemented.');
   }
 
   Future<void> updateTexture(Uint8List data, int width, int height) async {
-    throw UnimplementedError('draw() has not been implemented.');
+    throw UnimplementedError('updateTexture() has not been implemented.');
   }
 
-  Future<void> updateTextureYUV(
+  Future<void> updateTextureByList(
       List<Uint8List> data, int width, int height, List<int> strides) async {
-    throw UnimplementedError('updateTextureYUV() has not been implemented.');
+    throw UnimplementedError('updateTextureByList() has not been implemented.');
   }
 
   Future<void> dispose() async {
