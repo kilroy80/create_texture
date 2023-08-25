@@ -40,7 +40,7 @@ abstract class CreateTexturePlatform extends PlatformInterface {
     throw UnimplementedError('updateTextureByList() has not been implemented.');
   }
 
-  Future<void> dispose() async {
+  Future<void> dispose(int textureId) async {
     throw UnimplementedError('dispose() has not been implemented.');
   }
 

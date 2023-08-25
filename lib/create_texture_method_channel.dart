@@ -46,7 +46,7 @@ class MethodChannelCreateTexture extends CreateTexturePlatform {
   }
 
   @override
-  Future<void> dispose() =>
+  Future<void> dispose(int textureId) =>
       methodChannel.invokeMethod('dispose', {'textureId': textureId});
 
   @override

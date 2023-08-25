@@ -10,12 +10,6 @@ class MockCreateTexturePlatform
     implements CreateTexturePlatform {
 
   @override
-  Future<void> dispose() {
-    // TODO: implement dispose
-    throw UnimplementedError();
-  }
-
-  @override
   Future<int> initialize(int type, double width, double height) {
     // TODO: implement initialize
     throw UnimplementedError();
@@ -37,6 +31,12 @@ class MockCreateTexturePlatform
   @override
   Future<void> updateTextureByList(List<Uint8List> data, int width, int height, List<int> strides) {
     // TODO: implement updateTextureByList
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> dispose(int textureId) {
+    // TODO: implement dispose
     throw UnimplementedError();
   }
 }

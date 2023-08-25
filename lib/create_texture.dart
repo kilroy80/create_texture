@@ -30,7 +30,7 @@ class OpenGLTextureController {
   }
 
   Future<void> dispose() async {
-    return CreateTexturePlatform.instance.dispose();
+    return CreateTexturePlatform.instance.dispose(textureId);
   }
 
   bool get isInitialized => CreateTexturePlatform.instance.isInitialized;
