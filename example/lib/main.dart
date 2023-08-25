@@ -57,7 +57,7 @@ class _MyAppState extends State<MyApp> {
     final ByteData bytes = await rootBundle.load('assets/images/img_avatar1.png');
     var buffers = bytes.buffer.asUint8List();
 
-    var result = await _controller.initialize(0, _width, _height);
+    var result = await _controller.initialize(TextureType.rgb, _width, _height);
     // while (true) {
     //   _controller.draw(buffers);
     // }

@@ -6,12 +6,16 @@ import 'create_texture_platform_interface.dart';
 class CreateTexture {
 }
 
+enum TextureType {
+  rgb, yuv,
+}
+
 class OpenGLTextureController {
 
   int textureId = CreateTexturePlatform.instance.textureId ?? 0;
 
-  Future<int> initialize(int type, double width, double height) async {
-    textureId = await CreateTexturePlatform.instance.initialize(type, width, height);
+  Future<int> initialize(TextureType type, double width, double height) async {
+    textureId = await CreateTexturePlatform.instance.initialize(type.index, width, height);
     return textureId;
   }
 
