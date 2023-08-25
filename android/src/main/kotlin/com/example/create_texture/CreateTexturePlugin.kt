@@ -87,6 +87,7 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
 
       val textureId: Long = call.argument("textureId") ?: 0
       this.openRenders[textureId]?.onDispose()
+      openRenders.remove(textureId)
 
       result.success(null)
 
