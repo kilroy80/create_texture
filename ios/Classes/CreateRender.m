@@ -34,38 +34,49 @@
         self.onNewFrame = onNewFrame;
         self.worker = worker;
 
-        NSThread *thread = [[NSThread alloc] initWithTarget:self selector:@selector(run) object:nil];
-        thread.name = @"CreateRender";
-        [thread start];
+//        NSThread *thread = [[NSThread alloc] initWithTarget:self selector:@selector(run) object:nil];
+//        thread.name = @"CreateRender";
+//        [thread start];
+        
+        [self initGL];
+        [_worker onCreate];
     }
     return self;
 }
 
-- (void)run {
-    [self initGL];
-    [_worker onCreate];
-
-    while (_running) {
-        CFTimeInterval loopStart = CACurrentMediaTime();
-
-        if ([_worker onDraw]) {
-            glFlush();
-            dispatch_async(dispatch_get_main_queue(), self.onNewFrame);
-        }
-
-        CFTimeInterval waitDelta = 0.016 - (CACurrentMediaTime() - loopStart);
-        if (waitDelta > 0) {
-            [NSThread sleepForTimeInterval:waitDelta];
-        }
-    }
-    [_worker onDispose];
-    [self deinitGL];
-}
-
 #pragma mark - Public
+
+- (void)updateTexture:(long)textureId :(double)width :(double)height :(NSData*)data {
+//    [self initGL];
+//    [_worker onCreate];
+
+//    while (_running) {
+//        CFTimeInterval loopStart = CACurrentMediaTime();
+//
+//        if ([_worker onDraw]) {
+//            glFlush();
+//            dispatch_async(dispatch_get_main_queue(), self.onNewFrame);
+//        }
+//
+//        CFTimeInterval waitDelta = 0.016 - (CACurrentMediaTime() - loopStart);
+//        if (waitDelta > 0) {
+//            [NSThread sleepForTimeInterval:waitDelta];
+//        }
+//    }
+//    [_worker onDispose];
+//    [self deinitGL];
+    
+    if ([_worker updateTexture:textureId :width :height :data]) {
+        glFlush();
+        dispatch_async(dispatch_get_main_queue(), self.onNewFrame);
+    }
+}
 
 - (void)dispose {
     _running = NO;
+    
+    [_worker onDispose];
+    [self deinitGL];
 }
 
 #pragma mark - FlutterTexture

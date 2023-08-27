@@ -7,7 +7,7 @@
 
 @protocol OpenGLRenderWorker<NSObject>
 - (void)onCreate;
-- (BOOL)onDraw;
+- (BOOL)updateTexture:(long)textureId :(double)width :(double)height :(NSData*)data;
 - (void)onDispose;
 @end
 
@@ -17,6 +17,7 @@
                       worker:(id<OpenGLRenderWorker>)worker
                   onNewFrame:(void(^)(void))onNewFrame;
 
+- (void)updateTexture:(long)textureId :(double)width :(double)height :(NSData*)data;
 - (void)dispose;
 
 @end
