@@ -1,51 +1,124 @@
-package com.example.create_texture.open
+package com.example.create_texture
 
 import android.graphics.SurfaceTexture
 import android.opengl.GLUtils
+import android.os.Handler
+import android.os.HandlerThread
 import android.util.Log
+import com.example.create_texture.worker.RGBRenderWorker
+import com.example.create_texture.worker.YUVRenderWorker
+import java.util.concurrent.Semaphore
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.egl.EGLContext
 import javax.microedition.khronos.egl.EGLDisplay
 import javax.microedition.khronos.egl.EGLSurface
 
-class OpenGLRenderer(
+class CreateRenderer(
     private val texture: SurfaceTexture,
-    private val worker: Worker
-) : Runnable {
+    private val textureId: Int,
+    private val type: Int,
+    private val width: Double,
+    private val height: Double
+) {
 
-    private lateinit  var egl: EGL10
+    private lateinit var egl: EGL10
     private lateinit var eglDisplay: EGLDisplay
     private lateinit var eglContext: EGLContext
     private var eglSurface: EGLSurface? = null
     private var running = true
 
-    init {
-        val thread = Thread(this)
-        thread.start()
+    private lateinit var worker: Worker
+
+    private var renderThread: HandlerThread? = null
+    private var renderHandler : Handler? = null
+
+    companion object {
+        private const val LOG_TAG = "OpenGL.Worker"
     }
 
-    override fun run() {
-        initGL()
-        worker.onCreate()
-        Log.d(LOG_TAG, "OpenGL init OK.")
-        while (running) {
-//            val loopStart = System.currentTimeMillis()
-            if (worker.onDraw()) {
+    init {
+        if (renderThread == null) {
+            renderThread = HandlerThread("createRenderer")
+            renderThread!!.start()
+
+            renderHandler = Handler(renderThread!!.looper)
+        }
+        this.executeSync {
+            initGL()
+
+            worker = if (type == 0)
+                RGBRenderWorker(textureId) else YUVRenderWorker(textureId)
+            worker.onCreate()
+
+            Log.d(LOG_TAG, "OpenGL init OK.")
+        }
+    }
+
+    private fun executeSync(task: () -> Unit) {
+        val semaphore = Semaphore(0)
+        renderHandler!!.post {
+            task.invoke()
+            semaphore.release()
+        }
+        semaphore.acquire()
+    }
+
+    private fun execute(task: () -> Unit) {
+        renderHandler!!.post {
+            task.invoke()
+        }
+    }
+
+//    override fun run() {
+//        initGL()
+//        worker.onCreate()
+//        Log.d(LOG_TAG, "OpenGL init OK.")
+//        while (running) {
+////            val loopStart = System.currentTimeMillis()
+//            if (worker.onDraw()) {
+//                if (!egl.eglSwapBuffers(eglDisplay, eglSurface)) {
+//                    Log.d(LOG_TAG, egl.eglGetError().toString())
+//                }
+//            }
+////            val waitDelta = 16 - (System.currentTimeMillis() - loopStart)
+////            if (waitDelta > 0) {
+////                try {
+////                    Thread.sleep(waitDelta)
+////                } catch (e: InterruptedException) {
+////                }
+////            }
+//        }
+////        worker.onDispose()
+////        deInitGL()
+//    }
+
+    fun updateTexture(byteArray: ByteArray, width: Int, height: Int): Boolean {
+        this.execute {
+            if (worker.updateTexture(byteArray, width, height)) {
                 if (!egl.eglSwapBuffers(eglDisplay, eglSurface)) {
                     Log.d(LOG_TAG, egl.eglGetError().toString())
                 }
             }
-//            val waitDelta = 16 - (System.currentTimeMillis() - loopStart)
-//            if (waitDelta > 0) {
-//                try {
-//                    Thread.sleep(waitDelta)
-//                } catch (e: InterruptedException) {
-//                }
-//            }
+
+//            Log.d(LOG_TAG, "OpenGL draw")
         }
-//        worker.onDispose()
-//        deInitGL()
+
+        return true
+    }
+
+    fun updateTextureByList(byteArray: List<ByteArray>, width: Int, height: Int, strides: IntArray): Boolean {
+        this.execute {
+            if (worker.updateTextureByList(byteArray, width, height, strides)) {
+                if (!egl.eglSwapBuffers(eglDisplay, eglSurface)) {
+                    Log.d(LOG_TAG, egl.eglGetError().toString())
+                }
+            }
+
+//            Log.d(LOG_TAG, "OpenGL draw")
+        }
+
+        return true
     }
 
     private fun initGL() {
@@ -142,11 +215,8 @@ class OpenGLRenderer(
 
     interface Worker {
         fun onCreate()
-        fun onDraw(): Boolean
+        fun updateTexture(byteArray: ByteArray, width: Int, height: Int): Boolean
+        fun updateTextureByList(byteArray: List<ByteArray>, width: Int, height: Int, strides: IntArray): Boolean
         fun onDispose()
-    }
-
-    companion object {
-        private const val LOG_TAG = "OpenGL.Worker"
     }
 }

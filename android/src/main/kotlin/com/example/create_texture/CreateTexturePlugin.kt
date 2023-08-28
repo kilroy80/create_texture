@@ -1,11 +1,9 @@
 package com.example.create_texture
 
 import android.graphics.SurfaceTexture
-import android.util.Log
 import android.util.LongSparseArray
 import androidx.annotation.NonNull
 import androidx.collection.ArrayMap
-import com.example.create_texture.open.CreateRenderer
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel

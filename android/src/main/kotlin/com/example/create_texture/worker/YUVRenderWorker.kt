@@ -1,12 +1,11 @@
-package com.example.create_texture.open
+package com.example.create_texture.worker
 
 import android.opengl.GLES20
 import android.util.Log
+import com.example.create_texture.CreateRenderer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
-import kotlin.math.max
-import kotlin.math.min
 
 class YUVRenderWorker(private val textureId: Int) : CreateRenderer.Worker {
 
