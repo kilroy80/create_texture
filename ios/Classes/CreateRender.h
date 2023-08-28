@@ -6,7 +6,7 @@
 #import <Flutter/Flutter.h>
 
 @protocol OpenGLRenderWorker<NSObject>
-- (void)onCreate;
+- (void)onCreate:(double)width :(double)height;
 - (BOOL)updateTexture:(long)textureId :(double)width :(double)height :(NSData*)data;
 - (void)onDispose;
 @end

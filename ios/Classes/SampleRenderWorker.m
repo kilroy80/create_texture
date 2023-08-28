@@ -54,7 +54,7 @@ enum {
 @end
 @implementation SampleRenderWorker
 
-- (void)onCreate {
+- (void)onCreate:(double)width :(double)height {
     
     GLint attribLocation[NUM_ATTRIBUTES] = {
         ATTRIB_VERTEX,
@@ -80,16 +80,18 @@ enum {
         NSLog(@"Error creating the program");
     }
     
+    glViewport(0, 0, width, height);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 - (BOOL)updateTexture:(long)textureId :(double)width :(double)height :(NSData*)data {
     
+    if (textureId <= 0 || !program) return NO;
 
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    glViewport(0, 0, width, height);
-    
+//    glViewport(0, 0, width, height);
+
     glUseProgram( program );
     glActiveTexture( GL_TEXTURE0 );
 //    glBindTexture( CVOpenGLESTextureGetTarget( texture ), CVOpenGLESTextureGetName( texture ) );

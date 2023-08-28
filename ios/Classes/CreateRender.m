@@ -28,9 +28,9 @@
                       worker:(id<OpenGLRenderWorker>)worker
                   onNewFrame:(void(^)(void))onNewFrame {
     self = [super init];
-    if (self){
+    if (self) {
         self.renderSize = renderSize;
-        self.running = YES;
+        self.running = NO;
         self.onNewFrame = onNewFrame;
         self.worker = worker;
 
@@ -39,7 +39,8 @@
 //        [thread start];
         
         [self initGL];
-        [_worker onCreate];
+        [_worker onCreate:renderSize.width : renderSize.height];
+
     }
     return self;
 }
@@ -98,8 +99,9 @@
 
     glTexImage2D(GL_TEXTURE_2D,
                  0, GL_RGBA,
-                 _renderSize.width, _renderSize.height,
-                 0, GL_RGBA,
+//                 _renderSize.width, _renderSize.height,
+                 0, 0,
+                 0, GL_BGRA,
                  GL_UNSIGNED_BYTE, NULL);
 
     glGenRenderbuffers(1, &_depthBuffer);
