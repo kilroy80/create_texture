@@ -36,7 +36,7 @@ public class SwiftCreateTexturePlugin: NSObject, FlutterPlugin {
 
       let render = CreateRender(
         size: CGSize(width: width!, height: height!),
-        worker: SampleRenderWorker(),
+        worker: RGBARenderWorker(),
         onNewFrame: {() -> Void in
     //          print(" self.registry.textureFrameAvailable(self.textureId!): \(self.textureId) ")
             
