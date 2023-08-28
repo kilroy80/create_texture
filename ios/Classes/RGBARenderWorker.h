@@ -5,6 +5,6 @@
 
 #import "CreateRender.h"
 
-@interface SampleRenderWorker : NSObject<OpenGLRenderWorker>
+@interface RGBARenderWorker : NSObject<OpenGLRenderWorker>
 
 @end

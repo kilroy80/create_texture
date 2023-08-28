@@ -3,7 +3,7 @@
 //  create_texture
 //
 
-#import "SampleRenderWorker.h"
+#import "RGBARenderWorker.h"
 #import <OpenGLES/ES2/gl.h>
 #import "ShaderUtilities.h"
 

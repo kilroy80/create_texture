@@ -53,8 +53,6 @@ public class SwiftCreateTexturePlugin: NSObject, FlutterPlugin {
 
       self.renders[Int(textureId!)] = render!;
 
-      NSLog("create %d", Int(textureId!));
-
       result(textureId!)
 
     case "updateTexture":
