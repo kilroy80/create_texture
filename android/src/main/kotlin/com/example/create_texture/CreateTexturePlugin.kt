@@ -3,7 +3,6 @@ package com.example.create_texture
 import android.graphics.SurfaceTexture
 import android.util.LongSparseArray
 import androidx.annotation.NonNull
-import androidx.collection.ArrayMap
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -20,8 +19,7 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
   private lateinit var channel : MethodChannel
 
   private lateinit var textures: TextureRegistry
-  private var surfaceTextures: ArrayMap<Long, SurfaceTexture> = ArrayMap()
-  private val openRenders: LongSparseArray<CreateRenderer> = LongSparseArray()
+  private val renders: LongSparseArray<CreateRenderer> = LongSparseArray()
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "create_texture")
@@ -48,7 +46,7 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
       surfaceTexture.setDefaultBufferSize(width.toInt(), height.toInt())
 
       val render = CreateRenderer(surfaceTexture, textureId.toInt(), type, width, height)
-      openRenders.put(entry.id(), render)
+      renders.put(entry.id(), render)
       result.success(entry.id())
 
     } else if (call.method.equals("updateTexture")) {
@@ -58,16 +56,9 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
       val width: Int = call.argument("width") ?: 0
       val height: Int = call.argument("height") ?: 0
 
-      this.openRenders[textureId]?.updateTexture(data, width, height)
+      this.renders[textureId]?.updateTexture(data, width, height)
 
-//      val surfaceTexture: SurfaceTexture? = surfaceTextures[textureId]
-//      if (surfaceTexture != null) {
-//        val worker = SampleRenderWorker(image)
-//        val render = OpenGLRenderer(surfaceTexture, worker)
-//        renders.put(textureId, render)
-
-        result.success(null)
-//      }
+      result.success(null)
 
     } else if (call.method.equals("updateTextureByList")) {
 
@@ -77,15 +68,15 @@ class CreateTexturePlugin: FlutterPlugin, MethodCallHandler {
       val height: Int = call.argument("height") ?: 0
       val strides: IntArray = call.argument("strides") ?: IntArray(0)
 
-      this.openRenders[textureId]?.updateTextureByList(data, width, height, strides)
+      this.renders[textureId]?.updateTextureByList(data, width, height, strides)
 
       result.success(null)
 
     } else if (call.method.equals("dispose")) {
 
       val textureId: Long = (call.argument("textureId") ?: 0).toLong()
-      this.openRenders[textureId]?.onDispose()
-      openRenders.remove(textureId)
+      this.renders[textureId]?.onDispose()
+      renders.remove(textureId)
 
       result.success(null)
 

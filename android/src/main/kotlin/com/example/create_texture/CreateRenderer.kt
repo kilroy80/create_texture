@@ -70,29 +70,6 @@ class CreateRenderer(
         }
     }
 
-//    override fun run() {
-//        initGL()
-//        worker.onCreate()
-//        Log.d(LOG_TAG, "OpenGL init OK.")
-//        while (running) {
-////            val loopStart = System.currentTimeMillis()
-//            if (worker.onDraw()) {
-//                if (!egl.eglSwapBuffers(eglDisplay, eglSurface)) {
-//                    Log.d(LOG_TAG, egl.eglGetError().toString())
-//                }
-//            }
-////            val waitDelta = 16 - (System.currentTimeMillis() - loopStart)
-////            if (waitDelta > 0) {
-////                try {
-////                    Thread.sleep(waitDelta)
-////                } catch (e: InterruptedException) {
-////                }
-////            }
-//        }
-////        worker.onDispose()
-////        deInitGL()
-//    }
-
     fun updateTexture(byteArray: ByteArray, width: Int, height: Int): Boolean {
         this.execute {
             if (worker.updateTexture(byteArray, width, height)) {
@@ -100,8 +77,6 @@ class CreateRenderer(
                     Log.d(LOG_TAG, egl.eglGetError().toString())
                 }
             }
-
-//            Log.d(LOG_TAG, "OpenGL draw")
         }
 
         return true
@@ -114,8 +89,6 @@ class CreateRenderer(
                     Log.d(LOG_TAG, egl.eglGetError().toString())
                 }
             }
-
-//            Log.d(LOG_TAG, "OpenGL draw")
         }
 
         return true
