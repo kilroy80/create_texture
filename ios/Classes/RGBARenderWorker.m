@@ -39,7 +39,7 @@ enum {
     NUM_ATTRIBUTES
 };
 
-@interface SampleRenderWorker() {
+@interface RGBARenderWorker() {
     
     GLint width;
     GLint height;
@@ -52,7 +52,7 @@ enum {
     
 }
 @end
-@implementation SampleRenderWorker
+@implementation RGBARenderWorker
 
 - (void)onCreate:(double)width :(double)height {
     
